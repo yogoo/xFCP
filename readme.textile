@@ -1,0 +1,5 @@
+h1. xFCP Partial Fork
+
+This is a partial fork of "xFCP":http://rtfm.modx.com/display/ADDON/xFPC for MODX Revolution.
+
+For the full extra, download it from the package manager.
