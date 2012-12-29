@@ -66,34 +66,23 @@ switch($eventName) {
         if (isset($_POST['tv'.$lifeTimeTv])) {
           $lifeTime = (int) $_POST['tv'.$lifeTimeTv];
           if ($lifeTime != '' && $lifeTime != 0) {
-
-            // Generate the resource url...
+            // Generate the resource url
             $ressourceId = (int) $resource->get('id');
-            $furlEnabled = (bool) $modx->getOption('friendly_urls');
-            $baseUrl = $modx->getOption('base_url');
+            $siteStart   = (int) $modx->getOption('site_start');
+            $url = ($ressourceId == $siteStart) ? $modx->getOption('base_url') : $modx->makeUrl($ressourceId, '', '', 'abs');
 
-            // ...for the home page
-            if ($ressourceId == (int) $modx->getOption('site_start')) {
-              $url = ($furlEnabled) ? $baseUrl : '';
+            // Modx returns a full url when friendly urls are enabled and the resource alias is empty or can't be found.
+            // Strip 'http://' and 'domain.tld'
+            if (substr($url, 0, 7) == 'http://') {
+              $url = str_replace('http://', '', $url);
+              $url = explode('/', $url);
+              array_shift($url);
+              $url = '/'.implode('/', $url);
             }
-            // ...for other pages
-            else {
-              $url = $modx->makeUrl($ressourceId);
-
-              // Remove http part
-              if (substr($url, 0, 7) == 'http://') {
-                $url = str_replace('http://', '', $url);
-                $url = explode('/', $url);
-                array_shift($url);
-                $url = '/'.implode('/', $url);
-              }
-            }
-
-            $url = ($furlEnabled) ? $_SERVER['HTTP_HOST'].$url : $_SERVER['HTTP_HOST'].$baseUrl.$url;
 
             // Set cache lifetime
             // Get cache hash
-            $hash = sha1($url);
+            $hash = sha1($_SERVER['HTTP_HOST'].$url);
 
             // Generate lifetime file
             file_put_contents($modx->getOption('core_path').'cache/xfpc/'.$hash.'.config', json_encode(array(
