@@ -66,19 +66,34 @@ switch($eventName) {
         if (isset($_POST['tv'.$lifeTimeTv])) {
           $lifeTime = (int) $_POST['tv'.$lifeTimeTv];
           if ($lifeTime != '' && $lifeTime != 0) {
-            $url = $modx->makeUrl($resource->get('id'));
 
-            // Remove http part
-            if (substr($url, 0, 7) == 'http://') {
-              $url = str_replace('http://', '', $url);
-              $url = explode('/', $url);
-              array_shift($url);
-              $url = '/'.implode('/', $url);
+            // Generate the resource url...
+            $ressourceId = (int) $resource->get('id');
+            $furlEnabled = (bool) $modx->getOption('friendly_urls');
+            $baseUrl = $modx->getOption('base_url');
+
+            // ...for the home page
+            if ($ressourceId == (int) $modx->getOption('site_start')) {
+              $url = ($furlEnabled) ? $baseUrl : '';
             }
+            // ...for other pages
+            else {
+              $url = $modx->makeUrl($ressourceId);
+
+              // Remove http part
+              if (substr($url, 0, 7) == 'http://') {
+                $url = str_replace('http://', '', $url);
+                $url = explode('/', $url);
+                array_shift($url);
+                $url = '/'.implode('/', $url);
+              }
+            }
+
+            $url = ($furlEnabled) ? $_SERVER['HTTP_HOST'].$url : $_SERVER['HTTP_HOST'].$baseUrl.$url;
 
             // Set cache lifetime
             // Get cache hash
-            $hash = sha1($_SERVER['HTTP_HOST'].$url);
+            $hash = sha1($url);
 
             // Generate lifetime file
             file_put_contents($modx->getOption('core_path').'cache/xfpc/'.$hash.'.config', json_encode(array(
