@@ -194,6 +194,18 @@ switch($eventName) {
     }
     break;
   case 'OnWebPageComplete':
+    
+    // disable caching on 404 error page
+    $currentResource = $modx->resource;
+    $errorPageId = $modx->getOption('error_page');
+	    
+    if ($currentResource && $errorPageId) {
+        if ($currentResource->get('id') == $errorPageId) {
+            $modx->log(modX::LOG_LEVEL_DEBUG, '[xFPC] disallow caching on 404 error page');
+            $cache = false;
+        }
+    }
+    
     if ($cache) {
       if (!is_dir($dir)) {
         mkdir($dir);
